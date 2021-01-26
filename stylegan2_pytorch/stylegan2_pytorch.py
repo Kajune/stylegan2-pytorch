@@ -310,6 +310,40 @@ class Dataset(data.Dataset):
         img = Image.open(path)
         return self.transform(img)
 
+class NetworkDataset(data.Dataset):
+    def __init__(self, host, image_size, transparent = False, aug_prob = 0.):
+        super().__init__()
+        import urllib.request
+        import io
+
+        self.host = host
+        self.image_size = image_size
+
+        with urllib.request.urlopen(host + 'list') as response:
+            self.paths = json.loads(response.read())
+            self.paths = [path.replace('\\', '/') for path in self.paths]
+        assert len(self.paths) > 0, f'No images were found in {host} for training'
+
+        convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
+        num_channels = 3 if not transparent else 4
+
+        self.transform = transforms.Compose([
+            transforms.Lambda(convert_image_fn),
+            transforms.Lambda(partial(resize_to_minimum_size, image_size)),
+            transforms.Resize(image_size),
+            RandomApply(aug_prob, transforms.RandomResizedCrop(image_size, scale=(0.5, 1.0), ratio=(0.98, 1.02)), transforms.CenterCrop(image_size)),
+            transforms.ToTensor(),
+            transforms.Lambda(expand_greyscale(transparent))
+        ])
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, index):
+        path = self.paths[index]
+        img = Image.open(io.BytesIO(urllib.request.urlopen(self.host + path).read()))
+        return self.transform(img)
+
 # augmentations
 
 def random_hflip(tensor, prob):
