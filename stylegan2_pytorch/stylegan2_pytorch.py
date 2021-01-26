@@ -4,6 +4,7 @@ import math
 import fire
 import json
 import urllib.request
+import urllib.parse
 import io
 
 from tqdm import tqdm
@@ -341,10 +342,8 @@ class NetworkDataset(data.Dataset):
 
     def __getitem__(self, index):
         path = self.paths[index]
-        request = urllib.request.urlopen(self.host + path)
-        print(self.host + path)
+        request = urllib.request.urlopen(urllib.parse.quote(self.host + path))
         img = Image.open(io.BytesIO(request.read()))
-        print(img)
         return self.transform(img)
 
 # augmentations
