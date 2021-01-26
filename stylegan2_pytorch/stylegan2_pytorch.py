@@ -341,10 +341,9 @@ class NetworkDataset(data.Dataset):
 
     def __getitem__(self, index):
         path = self.paths[index]
-        print(self.host + path)
         request = urllib.request.urlopen(self.host + path)
-        print(request)
         img = Image.open(io.BytesIO(request.read()))
+        img.save('tmp.jpg')
         return self.transform(img)
 
 # augmentations
