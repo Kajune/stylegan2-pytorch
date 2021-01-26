@@ -3,6 +3,8 @@ import sys
 import math
 import fire
 import json
+import urllib.request
+import io
 
 from tqdm import tqdm
 from math import floor, log2
@@ -313,8 +315,6 @@ class Dataset(data.Dataset):
 class NetworkDataset(data.Dataset):
     def __init__(self, host, image_size, transparent = False, aug_prob = 0.):
         super().__init__()
-        import urllib.request
-        import io
 
         self.host = host
         self.image_size = image_size
