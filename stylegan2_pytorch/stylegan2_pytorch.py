@@ -342,7 +342,7 @@ class NetworkDataset(data.Dataset):
 
     def __getitem__(self, index):
         path = self.paths[index]
-        request = urllib.request.urlopen(urllib.parse.quote(self.host + path))
+        request = urllib.request.urlopen(self.host + urllib.parse.quote(path))
         img = Image.open(io.BytesIO(request.read()))
         return self.transform(img)
 
